@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dein Download | Executive Performance Check | Katja Kaiser</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #C9A962;
+            --gold-light: #E8D5A3;
+            --gold-dark: #A68B4B;
+            --dark: #1A1A1A;
+            --dark-light: #2D2D2D;
+            --white: #FFFFFF;
+            --gray: #F5F5F5;
+            --text: #333333;
+            --text-light: #666666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 60px 0;
+        }
+
+        .content-box {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 60px 50px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+        }
+
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            box-shadow: 0 10px 30px rgba(201, 169, 98, 0.4);
+            font-size: 3rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 40px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Download Button */
+        .btn-gold {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: var(--dark);
+            padding: 20px 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 40px;
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(201, 169, 98, 0.4);
+        }
+
+        .btn-gold svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--dark);
+        }
+
+        /* Info Box */
+        .info-box {
+            background: var(--gray);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .info-box h2 {
+            font-size: 1.3rem;
+            color: var(--dark);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .tip-list {
+            list-style: none;
+        }
+
+        .tip-list li {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+
+        .tip-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .tip-icon {
+            color: var(--gold);
+            font-size: 1.2rem;
+            min-width: 25px;
+        }
+
+        .tip-list p {
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        /* Next Steps */
+        .next-steps {
+            background: linear-gradient(135deg, var(--gold-light) 0%, #F5EED6 100%);
+            border-radius: 15px;
+            padding: 30px;
+            border-left: 4px solid var(--gold);
+        }
+
+        .next-steps h3 {
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+
+        .next-steps p {
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+
+        .next-steps .btn-secondary {
+            display: inline-block;
+            background: var(--dark);
+            color: var(--gold);
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .next-steps .btn-secondary:hover {
+            background: var(--dark-light);
+        }
+
+        /* Footer */
+        footer {
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            padding: 30px 0;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--gold-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--gold);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-box {
+                padding: 40px 25px;
+            }
+
+            h1 {
+                font-size: 1.7rem;
+            }
+
+            .btn-gold {
+                padding: 18px 35px;
+                font-size: 1rem;
+            }
+
+            .info-box, .next-steps {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="container">
+            <div class="content-box">
+                <div class="success-icon">🎉</div>
+
+                <h1>Dein Download ist bereit!</h1>
+                <p class="subtitle">Vielen Dank für dein Vertrauen. Hier ist dein Executive Performance Check 2026.</p>
+
+                <a href="../files/executive-performance-check-2026.pdf" class="btn-gold" download>
+                    <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                    Jetzt herunterladen
+                </a>
+
+                <div class="info-box">
+                    <h2>So nutzt du den Check optimal:</h2>
+                    <ul class="tip-list">
+                        <li>
+                            <span class="tip-icon">📝</span>
+                            <p>Nimm dir 10-15 Minuten ungestörte Zeit für die Bearbeitung</p>
+                        </li>
+                        <li>
+                            <span class="tip-icon">💡</span>
+                            <p>Beantworte die Fragen spontan und ehrlich – es gibt kein Richtig oder Falsch</p>
+                        </li>
+                        <li>
+                            <span class="tip-icon">🎯</span>
+                            <p>Fokussiere dich am Ende auf den einen Bereich, der dich am meisten anspricht</p>
+                        </li>
+                        <li>
+                            <span class="tip-icon">✨</span>
+                            <p>Setze einen konkreten ersten Schritt innerhalb der nächsten 48 Stunden um</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="next-steps">
+                    <h3>Du möchtest tiefer einsteigen?</h3>
+                    <p>Wenn du nach dem Check merkst, dass du Unterstützung bei der Umsetzung brauchst, lass uns sprechen. In einem kostenlosen Erstgespräch schauen wir gemeinsam, wo du ansetzen kannst.</p>
+                    <a href="https://katjakaiser-coaching.de/kontakt/" class="btn-secondary" target="_blank">Gespräch vereinbaren</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://katjakaiser-coaching.de" target="_blank">Website</a>
+                <a href="https://katjakaiser-coaching.de/impressum/" target="_blank">Impressum</a>
+                <a href="https://katjakaiser-coaching.de/datenschutz/" target="_blank">Datenschutz</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

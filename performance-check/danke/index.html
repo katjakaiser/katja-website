@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast geschafft! | Executive Performance Check | Katja Kaiser</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #C9A962;
+            --gold-light: #E8D5A3;
+            --gold-dark: #A68B4B;
+            --dark: #1A1A1A;
+            --dark-light: #2D2D2D;
+            --white: #FFFFFF;
+            --gray: #F5F5F5;
+            --text: #333333;
+            --text-light: #666666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 60px 0;
+        }
+
+        .content-box {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 60px 50px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            box-shadow: 0 10px 30px rgba(201, 169, 98, 0.4);
+        }
+
+        .success-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: var(--white);
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--dark);
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--gold-dark);
+            margin-bottom: 30px;
+        }
+
+        .instructions {
+            background: var(--gray);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .instructions h2 {
+            font-size: 1.3rem;
+            color: var(--dark);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .step {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-number {
+            width: 35px;
+            height: 35px;
+            min-width: 35px;
+            background: var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        .step-content h3 {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .step-content p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .email-note {
+            background: linear-gradient(135deg, var(--gold-light) 0%, #F5EED6 100%);
+            border-left: 4px solid var(--gold);
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin-top: 30px;
+        }
+
+        .email-note p {
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+
+        .email-note strong {
+            color: var(--gold-dark);
+        }
+
+        /* Footer */
+        footer {
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            padding: 30px 0;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--gold-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--gold);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-box {
+                padding: 40px 25px;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            .instructions {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="container">
+            <div class="content-box">
+                <div class="success-icon">
+                    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                </div>
+
+                <h1>Fast geschafft!</h1>
+                <p class="subtitle">Nur noch ein Schritt zu deinem Executive Performance Check</p>
+
+                <div class="instructions">
+                    <h2>So geht's weiter:</h2>
+
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Öffne dein E-Mail-Postfach</h3>
+                            <p>Du erhältst in wenigen Minuten eine E-Mail von mir.</p>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Bestätige deine E-Mail-Adresse</h3>
+                            <p>Klicke auf den Bestätigungslink in der E-Mail.</p>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Erhalte deinen Performance Check</h3>
+                            <p>Nach der Bestätigung bekommst du sofort Zugang zum Download.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="email-note">
+                    <p><strong>Keine E-Mail erhalten?</strong> Schau bitte auch in deinem Spam-Ordner nach. Die E-Mail kommt von <strong>kontakt@katjakaiser-coaching.de</strong></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://katjakaiser-coaching.de" target="_blank">Website</a>
+                <a href="https://katjakaiser-coaching.de/impressum/" target="_blank">Impressum</a>
+                <a href="https://katjakaiser-coaching.de/datenschutz/" target="_blank">Datenschutz</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
