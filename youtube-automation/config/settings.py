@@ -15,13 +15,11 @@ class Settings(BaseSettings):
     base_dir: Path = Field(default=Path(__file__).parent.parent)
     data_dir: Path = Field(default=None)
 
-    # === OpenAI/Anthropic API ===
-    openai_api_key: Optional[str] = Field(default=None, alias="OPENAI_API_KEY")
+    # === Anthropic Claude API ===
     anthropic_api_key: Optional[str] = Field(default=None, alias="ANTHROPIC_API_KEY")
 
-    # LLM Einstellungen
-    llm_provider: str = Field(default="openai", alias="LLM_PROVIDER")  # "openai" oder "anthropic"
-    llm_model: str = Field(default="gpt-4-turbo-preview", alias="LLM_MODEL")
+    # LLM Einstellungen (nur Anthropic Claude)
+    llm_model: str = Field(default="claude-sonnet-4-20250514", alias="LLM_MODEL")
 
     # === ElevenLabs Voice Cloning ===
     elevenlabs_api_key: Optional[str] = Field(default=None, alias="ELEVENLABS_API_KEY")

@@ -6,26 +6,19 @@ python-dotenv>=1.0.0
 pydantic>=2.0.0
 pydantic-settings>=2.0.0
 
-# Source Processing
+# Source Processing (optional - für direkte Quellenverarbeitung)
 PyPDF2>=3.0.0
 pdfplumber>=0.10.0
 beautifulsoup4>=4.12.0
 requests>=2.31.0
-trafilatura>=1.6.0  # Better web content extraction
+trafilatura>=1.6.0
 
-# LLM Integration
-openai>=1.0.0
+# Anthropic Claude (für Skript-Optimierung)
 anthropic>=0.18.0
-langchain>=0.1.0
-langchain-openai>=0.0.5
-langchain-anthropic>=0.1.0
 
-# Vector Store (for RAG)
-chromadb>=0.4.0
-sentence-transformers>=2.2.0
-
-# Voice Synthesis
+# Voice Synthesis (ElevenLabs)
 elevenlabs>=1.0.0
+pydub>=0.25.0  # Für Audio-Kombination
 
 # Video Generation
 moviepy>=1.0.3
@@ -40,8 +33,6 @@ google-auth-httplib2>=0.1.1
 # CLI and Progress
 typer>=0.9.0
 rich>=13.0.0
-tqdm>=4.66.0
 
-# Testing
+# Testing (optional)
 pytest>=7.4.0
-pytest-asyncio>=0.21.0

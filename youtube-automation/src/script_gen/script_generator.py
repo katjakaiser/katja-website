@@ -1,5 +1,11 @@
 """
-Skript-Generierung für YouTube-Videos mit LLM-Unterstützung.
+Skript-Generierung für YouTube-Videos mit Anthropic Claude.
+
+Workflow:
+1. Du lädst Quellen in NotebookLM hoch
+2. NotebookLM generiert eine Zusammenfassung/Podcast
+3. Du fügst den Text hier ein
+4. Claude optimiert das Skript für YouTube
 """
 
 import json
@@ -8,7 +14,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Literal
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +60,11 @@ class VideoScript:
         """Geschätzte Sprechdauer (ca. 150 Wörter/Minute)."""
         return self.word_count / 150
 
+    @property
+    def estimated_characters(self) -> int:
+        """Geschätzte Zeichenanzahl (für ElevenLabs-Kosten)."""
+        return len(self.full_script)
+
     def to_dict(self) -> dict:
         """Konvertiert das Skript in ein Dictionary."""
         return {
@@ -70,6 +81,7 @@ class VideoScript:
             "thumbnail_ideas": self.thumbnail_ideas,
             "word_count": self.word_count,
             "estimated_duration_minutes": round(self.estimated_duration_minutes, 1),
+            "estimated_characters": self.estimated_characters,
         }
 
     def save(self, file_path: Path | str) -> None:
@@ -94,46 +106,142 @@ class VideoScript:
             thumbnail_ideas=data.get("thumbnail_ideas", []),
         )
 
+    @classmethod
+    def from_plain_text(cls, text: str, title: str = "Video") -> "VideoScript":
+        """
+        Erstellt ein einfaches VideoScript aus reinem Text.
+
+        Nützlich wenn du bereits ein fertiges Skript hast
+        (z.B. direkt aus NotebookLM).
+        """
+        return cls(
+            title=title,
+            hook="",
+            introduction="",
+            main_content=[{"title": "Hauptteil", "content": text}],
+            conclusion="",
+            call_to_action="",
+        )
+
 
 class ScriptGenerator:
     """
-    Generiert Video-Skripte aus Quelleninhalten mit LLM-Unterstützung.
+    Generiert und optimiert Video-Skripte mit Anthropic Claude.
 
-    Unterstützt OpenAI und Anthropic APIs.
+    Workflow:
+        1. NotebookLM: Quellen hochladen, Zusammenfassung generieren
+        2. Hier: Text einfügen, Claude optimiert für YouTube
+
+    Beispiel:
+        generator = ScriptGenerator(api_key="sk-ant-...")
+
+        # NotebookLM-Text zu YouTube-Skript optimieren
+        script = generator.optimize_for_youtube(
+            notebooklm_text="Dein NotebookLM-Output...",
+            topic="Stressmanagement",
+        )
+
+        # Oder direkt ein Skript generieren
+        script = generator.generate_script(
+            source_text="Deine Quellen...",
+            topic="Stressmanagement",
+        )
     """
 
     def __init__(
         self,
-        provider: Literal["openai", "anthropic"] = "openai",
-        model: Optional[str] = None,
         api_key: Optional[str] = None,
+        model: str = "claude-sonnet-4-20250514",
     ):
-        self.provider = provider
         self.model = model
         self._client = None
         self._api_key = api_key
 
-        # Standard-Modelle
-        if not self.model:
-            self.model = (
-                "gpt-4-turbo-preview" if provider == "openai" else "claude-3-5-sonnet-20241022"
-            )
-
     def _get_client(self):
-        """Lazy-Loading des API-Clients."""
+        """Lazy-Loading des Anthropic-Clients."""
         if self._client is not None:
             return self._client
 
-        if self.provider == "openai":
-            from openai import OpenAI
+        from anthropic import Anthropic
 
-            self._client = OpenAI(api_key=self._api_key)
-        else:
-            from anthropic import Anthropic
-
-            self._client = Anthropic(api_key=self._api_key)
-
+        self._client = Anthropic(api_key=self._api_key)
         return self._client
+
+    def optimize_for_youtube(
+        self,
+        notebooklm_text: str,
+        topic: str,
+        target_duration_minutes: int = 10,
+        style: str = "professional",
+        additional_instructions: str = "",
+    ) -> VideoScript:
+        """
+        Optimiert NotebookLM-Output für YouTube.
+
+        Dies ist der Hauptworkflow:
+        1. Du generierst Text/Podcast in NotebookLM
+        2. Kopierst den Text hierher
+        3. Claude strukturiert ihn als YouTube-Skript
+
+        Args:
+            notebooklm_text: Der Text aus NotebookLM
+            topic: Das Hauptthema
+            target_duration_minutes: Ziel-Videolänge
+            style: Stil (professional, casual, educational)
+            additional_instructions: Zusätzliche Anweisungen
+
+        Returns:
+            VideoScript-Objekt
+        """
+        logger.info(f"Optimiere NotebookLM-Text für YouTube: {topic}")
+
+        target_words = target_duration_minutes * 150
+
+        prompt = f"""Optimiere den folgenden Text aus NotebookLM für ein YouTube-Video.
+
+NOTEBOOKLM-TEXT:
+{notebooklm_text}
+
+THEMA: {topic}
+ZIEL-LÄNGE: ca. {target_words} Wörter (~{target_duration_minutes} Minuten)
+STIL: {self._get_style_desc(style)}
+SPRECHER: Katja Kaiser - Executive Coach für Performance, Leadership und Breathwork
+
+{f"ZUSÄTZLICHE ANWEISUNGEN: {additional_instructions}" if additional_instructions else ""}
+
+Strukturiere den Text als YouTube-Video-Skript im JSON-Format:
+
+{{
+    "title": "Aussagekräftiger Video-Titel (max. 60 Zeichen)",
+    "hook": "Aufmerksamkeitsstarker Einstieg - die ersten 10 Sekunden entscheiden! (max. 50 Wörter)",
+    "introduction": "Was erwartet die Zuschauer? Warum sollten sie dranbleiben? (ca. 100 Wörter)",
+    "main_content": [
+        {{
+            "title": "Kapitel 1: [Überschrift]",
+            "content": "Inhalt zum Vorlesen..."
+        }},
+        {{
+            "title": "Kapitel 2: [Überschrift]",
+            "content": "Inhalt zum Vorlesen..."
+        }}
+    ],
+    "conclusion": "Zusammenfassung der wichtigsten Punkte (ca. 100 Wörter)",
+    "call_to_action": "Was sollen Zuschauer als nächstes tun? Abonnieren, kommentieren, etc. (ca. 50 Wörter)",
+    "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+    "description": "YouTube-Beschreibung für unter dem Video (2-3 Sätze)",
+    "thumbnail_ideas": ["Thumbnail-Idee 1", "Thumbnail-Idee 2"]
+}}
+
+WICHTIG:
+- Schreibe zum VORLESEN, nicht zum Lesen
+- Natürliche, gesprochene Sprache
+- Kurze Sätze, klare Struktur
+- Sprich Zuschauer direkt an ("du", "dir")
+- Baue rhetorische Fragen ein
+- Antworte NUR mit dem JSON"""
+
+        response = self._call_claude(prompt)
+        return self._parse_response(response, topic, target_duration_minutes)
 
     def generate_script(
         self,
@@ -144,13 +252,15 @@ class ScriptGenerator:
         additional_instructions: str = "",
     ) -> VideoScript:
         """
-        Generiert ein Video-Skript aus dem Quellentext.
+        Generiert ein Video-Skript direkt aus Quellentext.
+
+        Falls du NotebookLM nicht nutzen möchtest.
 
         Args:
             source_text: Der kombinierte Text aller Quellen
-            topic: Das Hauptthema des Videos
-            target_duration_minutes: Ziel-Videolänge in Minuten
-            style: Stil des Videos (professional, casual, educational)
+            topic: Das Hauptthema
+            target_duration_minutes: Ziel-Videolänge
+            style: Stil (professional, casual, educational)
             additional_instructions: Zusätzliche Anweisungen
 
         Returns:
@@ -158,150 +268,105 @@ class ScriptGenerator:
         """
         logger.info(f"Generiere Skript für: {topic}")
 
-        # Ziel-Wortanzahl berechnen (ca. 150 Wörter/Minute)
         target_words = target_duration_minutes * 150
-
-        prompt = self._build_prompt(
-            source_text=source_text,
-            topic=topic,
-            target_words=target_words,
-            style=style,
-            additional_instructions=additional_instructions,
-        )
-
-        # LLM aufrufen
-        response = self._call_llm(prompt)
-
-        # Antwort parsen
-        script = self._parse_response(response, topic, target_duration_minutes)
-
-        logger.info(
-            f"Skript generiert: {script.word_count} Wörter, "
-            f"~{script.estimated_duration_minutes:.1f} Minuten"
-        )
-
-        return script
-
-    def _build_prompt(
-        self,
-        source_text: str,
-        topic: str,
-        target_words: int,
-        style: str,
-        additional_instructions: str,
-    ) -> str:
-        """Erstellt den Prompt für die Skript-Generierung."""
-
-        style_instructions = {
-            "professional": "professionell, kompetent aber nahbar",
-            "casual": "locker, freundlich, wie ein Gespräch unter Freunden",
-            "educational": "lehrreich, didaktisch aufgebaut, mit klaren Erklärungen",
-        }
-
-        style_desc = style_instructions.get(style, style_instructions["professional"])
 
         prompt = f"""Erstelle ein YouTube-Video-Skript basierend auf den folgenden Quellen.
 
-THEMA: {topic}
-
-ZIEL-LÄNGE: ca. {target_words} Wörter (für ein ~{target_words // 150} Minuten Video)
-
-STIL: {style_desc}
-
-SPRECHER: Katja Kaiser - Executive Coach für Performance, Leadership und Breathwork
-
 QUELLEN:
-{source_text[:15000]}  # Begrenzen um Token-Limit nicht zu überschreiten
+{source_text[:20000]}
+
+THEMA: {topic}
+ZIEL-LÄNGE: ca. {target_words} Wörter (~{target_duration_minutes} Minuten)
+STIL: {self._get_style_desc(style)}
+SPRECHER: Katja Kaiser - Executive Coach für Performance, Leadership und Breathwork
 
 {f"ZUSÄTZLICHE ANWEISUNGEN: {additional_instructions}" if additional_instructions else ""}
 
-Erstelle das Skript im folgenden JSON-Format:
+Erstelle das Skript im JSON-Format:
 
 {{
     "title": "Aussagekräftiger Video-Titel",
     "hook": "Aufmerksamkeitsstarker Einstieg (erste 10 Sekunden, max. 50 Wörter)",
-    "introduction": "Einleitung - Was erwartet die Zuschauer? (ca. 100 Wörter)",
+    "introduction": "Einleitung (ca. 100 Wörter)",
     "main_content": [
-        {{
-            "title": "Abschnitt 1: [Überschrift]",
-            "content": "Inhalt des Abschnitts..."
-        }},
-        {{
-            "title": "Abschnitt 2: [Überschrift]",
-            "content": "Inhalt des Abschnitts..."
-        }}
-        // Weitere Abschnitte nach Bedarf
+        {{"title": "Kapitel 1", "content": "..."}},
+        {{"title": "Kapitel 2", "content": "..."}}
     ],
-    "conclusion": "Zusammenfassung und Key Takeaways (ca. 100 Wörter)",
-    "call_to_action": "Handlungsaufforderung am Ende (ca. 50 Wörter)",
+    "conclusion": "Zusammenfassung (ca. 100 Wörter)",
+    "call_to_action": "Handlungsaufforderung (ca. 50 Wörter)",
     "tags": ["tag1", "tag2", "tag3"],
     "description": "YouTube-Beschreibung (2-3 Sätze)",
     "thumbnail_ideas": ["Idee 1", "Idee 2"]
 }}
 
-WICHTIG:
-- Das Skript sollte zum Vorlesen geeignet sein
-- Verwende natürliche Sprache, keine Aufzählungen
-- Baue wissenschaftliche Erkenntnisse aus den Quellen ein
-- Gib praktische Tipps und Handlungsempfehlungen
-- Sprich die Zuschauer direkt an ("du", "dir")
-- Antworte NUR mit dem JSON-Objekt, keine zusätzlichen Erklärungen
-"""
-        return prompt
+WICHTIG: Schreibe zum VORLESEN, natürliche Sprache, sprich Zuschauer direkt an.
+Antworte NUR mit dem JSON."""
 
-    def _call_llm(self, prompt: str) -> str:
-        """Ruft das LLM mit dem Prompt auf."""
+        response = self._call_claude(prompt)
+        script = self._parse_response(response, topic, target_duration_minutes)
+
+        logger.info(
+            f"Skript generiert: {script.word_count} Wörter, "
+            f"~{script.estimated_duration_minutes:.1f} Minuten, "
+            f"~{script.estimated_characters} Zeichen"
+        )
+
+        return script
+
+    def _get_style_desc(self, style: str) -> str:
+        """Gibt Stil-Beschreibung zurück."""
+        styles = {
+            "professional": "professionell, kompetent aber nahbar",
+            "casual": "locker, freundlich, wie ein Gespräch unter Freunden",
+            "educational": "lehrreich, didaktisch aufgebaut, mit klaren Erklärungen",
+        }
+        return styles.get(style, styles["professional"])
+
+    def _call_claude(self, prompt: str) -> str:
+        """Ruft Claude API auf."""
         client = self._get_client()
 
         system_message = """Du bist ein erfahrener Skriptautor für YouTube-Videos im Bereich
 Executive Coaching, Leadership und persönliche Entwicklung.
 
 Der Sprecher ist Katja Kaiser, eine Executive Coach mit Expertise in:
-- Executive Performance
+- Executive Performance & High Performance
 - Leadership Development
 - Breathwork & Stressmanagement
 - Mindset & Selbstführung
 
-Erstelle Skripte, die wissenschaftlich fundiert, aber leicht verständlich sind.
+Erstelle Skripte, die:
+- Wissenschaftlich fundiert aber leicht verständlich sind
+- Zum VORLESEN geeignet sind (natürliche Sprache)
+- Die Zuschauer direkt ansprechen
+- Mit einem starken Hook beginnen
+- Klare Handlungsempfehlungen geben
+
 Antworte immer im angeforderten JSON-Format."""
 
-        if self.provider == "openai":
-            response = client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": prompt},
-                ],
-                temperature=0.7,
-                max_tokens=4000,
-            )
-            return response.choices[0].message.content
-
-        else:  # anthropic
-            response = client.messages.create(
-                model=self.model,
-                max_tokens=4000,
-                system=system_message,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            return response.content[0].text
+        response = client.messages.create(
+            model=self.model,
+            max_tokens=4000,
+            system=system_message,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return response.content[0].text
 
     def _parse_response(
         self, response: str, topic: str, target_duration: int
     ) -> VideoScript:
-        """Parst die LLM-Antwort in ein VideoScript-Objekt."""
+        """Parst die Claude-Antwort in ein VideoScript-Objekt."""
 
         # JSON aus der Antwort extrahieren
         json_match = re.search(r"\{[\s\S]*\}", response)
         if not json_match:
-            raise ValueError("Keine gültige JSON-Antwort vom LLM erhalten")
+            raise ValueError("Keine gültige JSON-Antwort von Claude erhalten")
 
         try:
             data = json.loads(json_match.group())
         except json.JSONDecodeError as e:
             raise ValueError(f"JSON-Parsing fehlgeschlagen: {e}")
 
-        # VideoScript erstellen
         return VideoScript(
             title=data.get("title", topic),
             hook=data.get("hook", ""),
@@ -342,7 +407,7 @@ FEEDBACK:
 Gib das überarbeitete Skript im gleichen JSON-Format zurück.
 Antworte NUR mit dem JSON-Objekt."""
 
-        response = self._call_llm(prompt)
+        response = self._call_claude(prompt)
         return self._parse_response(response, script.title, script.target_duration_minutes)
 
     def generate_timestamps(self, script: VideoScript) -> list[dict]:
@@ -371,7 +436,7 @@ Antworte NUR mit dem JSON-Objekt."""
             seconds = current_time % 60
             timestamps.append({
                 "time": f"{minutes}:{seconds:02d}",
-                "title": section.get("title", "").replace("Abschnitt", "").strip(": 0123456789"),
+                "title": section.get("title", "").replace("Kapitel", "").strip(": 0123456789"),
             })
 
             section_words = len(section.get("content", "").split())
