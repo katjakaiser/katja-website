@@ -23,6 +23,8 @@ from rich.table import Table
 from rich.panel import Panel
 from dotenv import load_dotenv
 
+from src.voice.license_checker import LicenseChecker, COMMERCIAL_USE_WARNING
+
 # Projektpfad zum Python-Path hinzufügen
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -34,6 +36,33 @@ app = typer.Typer(
     add_completion=False,
 )
 console = Console()
+
+
+def _check_elevenlabs_license(api_key: str) -> bool:
+    """
+    Prüft die ElevenLabs-Lizenz vor der Nutzung.
+
+    Returns:
+        True wenn kommerzielle Nutzung erlaubt, sonst False
+    """
+    console.print(Panel.fit(
+        "[bold yellow]Lizenzprüfung[/bold yellow]\n"
+        "Prüfe ElevenLabs Abo-Status...",
+        border_style="yellow"
+    ))
+
+    checker = LicenseChecker(api_key=api_key)
+    allowed, message = checker.verify_commercial_use()
+
+    if not allowed:
+        console.print(f"\n[bold red]{message}[/bold red]")
+        console.print("\n" + COMMERCIAL_USE_WARNING)
+        console.print("[red]Video-Erstellung wird abgebrochen.[/red]")
+        console.print("[yellow]Bitte aktiviere ein kostenpflichtiges ElevenLabs-Abo (mind. Starter $5/Monat).[/yellow]")
+        return False
+
+    console.print(f"[green]{message}[/green]\n")
+    return True
 
 
 @app.command("from-notebooklm")
@@ -177,6 +206,10 @@ def full_pipeline(
         console.print("Nutze 'python cli.py setup' für die Einrichtung")
         raise typer.Exit(1)
 
+    # LIZENZPRÜFUNG: Vor jeder kommerziellen Nutzung
+    if not _check_elevenlabs_license(el_key):
+        raise typer.Exit(1)
+
     # Text laden
     if text_file and text_file.exists():
         notebooklm_text = text_file.read_text(encoding="utf-8")
@@ -251,6 +284,11 @@ def _generate_video_from_script(script, upload: bool = False):
 
     if not el_key or not el_voice:
         console.print("[yellow]ElevenLabs nicht konfiguriert - Video wird übersprungen[/yellow]")
+        return
+
+    # LIZENZPRÜFUNG: Vor jeder kommerziellen Nutzung
+    if not _check_elevenlabs_license(el_key):
+        console.print("[red]Video-Erstellung abgebrochen wegen fehlender Lizenz.[/red]")
         return
 
     # Audio
@@ -376,6 +414,15 @@ def test_voice(
         console.print("[red]ELEVENLABS_API_KEY und ELEVENLABS_VOICE_ID müssen gesetzt sein![/red]")
         console.print("Nutze 'python cli.py voice-clone' um eine Stimme zu klonen")
         raise typer.Exit(1)
+
+    # LIZENZPRÜFUNG: Warnung anzeigen (aber Test erlauben)
+    checker = LicenseChecker(api_key=api_key)
+    allowed, message = checker.verify_commercial_use()
+    if not allowed:
+        console.print(f"\n[yellow]{message}[/yellow]")
+        console.print("[yellow]Test wird fortgesetzt - aber kommerzielle Nutzung ist nicht erlaubt![/yellow]\n")
+    else:
+        console.print(f"[green]{message}[/green]\n")
 
     console.print(f"Generiere Audio für: '{text[:50]}...'")
 
@@ -511,6 +558,25 @@ def info():
     el_voice = os.getenv("ELEVENLABS_VOICE_ID")
     if el_key and el_voice:
         table.add_row("ElevenLabs Voice", "[green]✓ Konfiguriert[/green]", f"Voice: {el_voice[:12]}...")
+
+        # Lizenzstatus prüfen
+        try:
+            checker = LicenseChecker(api_key=el_key)
+            status = checker.check_subscription()
+            if status.can_use_commercially:
+                table.add_row(
+                    "ElevenLabs Lizenz",
+                    "[green]✓ Commercial License[/green]",
+                    f"Plan: {status.tier}, Zeichen: {status.characters_remaining:,} übrig"
+                )
+            else:
+                table.add_row(
+                    "ElevenLabs Lizenz",
+                    "[red]✗ Keine Commercial License[/red]",
+                    f"Plan: {status.tier} - Upgrade auf Starter erforderlich!"
+                )
+        except Exception:
+            table.add_row("ElevenLabs Lizenz", "[yellow]? Unbekannt[/yellow]", "Konnte Status nicht prüfen")
     elif el_key:
         table.add_row("ElevenLabs Voice", "[yellow]⚠ Teilweise[/yellow]", "Voice ID fehlt - voice-clone ausführen")
     else:
